@@ -29,6 +29,8 @@
 
 **Why:** Tasks, immutable session history, settings, active timer recovery and the event outbox have relationships and ordering requirements. SQLite supports durable local transactions and lets operational changes and outbox creation be committed together.
 
+The initial implementation uses a browser-only localStorage adapter for visual development and component testing. The packaged desktop application will use SQLite as the authoritative repository before version 1 is complete.
+
 **Alternative considered:** JSON or browser localStorage.
 
 **Why not chosen:** A single document is initially simpler but becomes fragile for transactional updates, chronological outbox delivery and future schema changes. Obsidian Markdown remains an output, not the operational database.
@@ -76,6 +78,8 @@ Each outbox event stores its rendered Markdown payload, target kind, target loca
 ## 8. Timer architecture
 
 **Chosen:** Timestamp-based state machine rather than trusting a repeating interval as the source of truth.
+
+The initial defaults are 25 minutes for focus and 5 minutes for a break. The user may change both in onboarding and Settings, and may override the planned duration before an individual focus session begins.
 
 Persisted active-timer data includes:
 
