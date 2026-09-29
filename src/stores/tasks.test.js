@@ -1,80 +1,52 @@
 import { createPinia, setActivePinia } from 'pinia'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { setBackend } from '../services/backend.js'
+import { useAppStore } from './app.js'
 import { useTasksStore } from './tasks.js'
 
-const STORAGE_KEY = 'focusflow.tasks.v1'
-const STORAGE_ERROR = 'Unable to save tasks. Check browser storage access and try again.'
-
-function storedTask(overrides = {}) {
-  return {
-    id: 'task_123',
-    title: 'Finish Dev 5 wireframes',
-    course: 'Dev 5',
-    status: 'active',
-    createdAt: '2026-09-27T20:00:00.000Z',
-    updatedAt: '2026-09-27T20:00:00.000Z',
-    completedAt: null,
-    ...overrides,
-  }
+const active = {
+  id: 'task_active', title: 'Active task', course: 'Dev 5', status: 'active',
+  createdAt: '2026-09-28T08:00:00.000Z', updatedAt: '2026-09-28T08:00:00.000Z', completedAt: null,
+}
+const completed = {
+  ...active, id: 'task_completed', title: 'Completed task', status: 'completed',
+  createdAt: '2026-09-27T08:00:00.000Z', updatedAt: '2026-09-28T09:00:00.000Z', completedAt: '2026-09-28T09:00:00.000Z',
+}
+const snapshot = {
+  tasks: [completed, active], history: [], activeTimer: null, pendingOutboxCount: 0,
+  settings: { focusMinutes: 25, breakMinutes: 5, soundEnabled: true, vaultPath: 'C:/Vault' },
 }
 
-describe('tasks store persistence', () => {
+describe('tasks store SQLite-backed adapter', () => {
   beforeEach(() => {
     vi.restoreAllMocks()
-    localStorage.clear()
     setActivePinia(createPinia())
   })
 
-  it('does not add a task when persistence fails and returns an actionable error', () => {
+  it('exposes active and completed tasks from the authoritative app snapshot', async () => {
+    setBackend({ invoke: vi.fn().mockResolvedValue(snapshot) })
+    await useAppStore().initialize()
     const store = useTasksStore()
-    vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
-      throw new Error('Quota exceeded')
+
+    expect(store.activeTasks.map((task) => task.id)).toEqual(['task_active'])
+    store.selectedView = 'completed'
+    expect(store.visibleTasks.map((task) => task.id)).toEqual(['task_completed'])
+  })
+
+  it('keeps current state unchanged when a native mutation fails', async () => {
+    const invoke = vi.fn(async (command) => {
+      if (command === 'get_app_snapshot') return snapshot
+      throw new Error('SQLite is read-only')
     })
-
-    const result = store.addTask({ title: 'Read chapter 4', course: 'Dev 5' })
-
-    expect(result).toEqual({ ok: false, errors: { persistence: STORAGE_ERROR } })
-    expect(store.tasks).toEqual([])
-  })
-
-  it.each([
-    JSON.stringify({ id: 'not-an-array' }),
-    JSON.stringify([{}]),
-    JSON.stringify([storedTask({ createdAt: null })]),
-    JSON.stringify([
-      storedTask({ status: 'completed', completedAt: null }),
-    ]),
-  ])('ignores malformed stored task data before hydration', (storedValue) => {
-    localStorage.setItem(STORAGE_KEY, storedValue)
-    setActivePinia(createPinia())
-
+    setBackend({ invoke })
+    const app = useAppStore()
+    await app.initialize()
     const store = useTasksStore()
 
-    expect(store.tasks).toEqual([])
-    expect(store.visibleTasks).toEqual([])
-  })
+    const result = await store.updateTask('task_active', { title: 'Changed', course: '' })
 
-  it.each([
-    ['update', storedTask(), (store) => store.updateTask('task_123', { title: 'Revised title', course: '' })],
-    ['complete', storedTask(), (store) => store.markComplete('task_123')],
-    [
-      'reopen',
-      storedTask({ status: 'completed', completedAt: '2026-09-27T21:00:00.000Z' }),
-      (store) => store.markActive('task_123'),
-    ],
-    ['remove', storedTask(), (store) => store.removeTask('task_123')],
-  ])('does not %s a task when persistence fails', (_operation, task, mutate) => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify([task]))
-    setActivePinia(createPinia())
-    const store = useTasksStore()
-    const originalTasks = JSON.parse(JSON.stringify(store.tasks))
-    vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
-      throw new Error('Quota exceeded')
-    })
-
-    const result = mutate(store)
-
-    expect(result).toEqual({ ok: false, errors: { persistence: STORAGE_ERROR } })
-    expect(store.tasks).toEqual(originalTasks)
+    expect(result.ok).toBe(false)
+    expect(result.errors.persistence).toContain('SQLite is read-only')
+    expect(store.tasks.find((task) => task.id === 'task_active').title).toBe('Active task')
   })
 })

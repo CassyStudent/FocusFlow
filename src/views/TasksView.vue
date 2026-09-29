@@ -37,9 +37,9 @@ function handlePersistenceResult(result) {
   return false
 }
 
-function submitCreate() {
+async function submitCreate() {
   clearErrors(createErrors)
-  const result = store.addTask(createForm)
+  const result = await store.addTask(createForm)
   if (!result.ok) {
     Object.assign(createErrors, result.errors)
     handlePersistenceResult(result)
@@ -58,8 +58,8 @@ function startEdit(task) {
   clearErrors(editErrors)
 }
 
-function saveEdit() {
-  const result = store.updateTask(editingTask.value.id, editForm)
+async function saveEdit() {
+  const result = await store.updateTask(editingTask.value.id, editForm)
   clearErrors(editErrors)
   if (!result.ok) {
     Object.assign(editErrors, result.errors)
@@ -70,17 +70,17 @@ function saveEdit() {
   editingTask.value = null
 }
 
-function confirmDelete() {
-  const result = store.removeTask(deletingTask.value.id)
+async function confirmDelete() {
+  const result = await store.removeTask(deletingTask.value.id)
   if (handlePersistenceResult(result)) deletingTask.value = null
 }
 
-function completeTask(taskId) {
-  handlePersistenceResult(store.markComplete(taskId))
+async function completeTask(taskId) {
+  handlePersistenceResult(await store.markComplete(taskId))
 }
 
-function reopenTask(taskId) {
-  handlePersistenceResult(store.markActive(taskId))
+async function reopenTask(taskId) {
+  handlePersistenceResult(await store.markActive(taskId))
 }
 
 function focusTask(task) {

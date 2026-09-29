@@ -1,0 +1,47 @@
+{
+  "version": 1,
+  "sources": [
+    {
+      "id": 1,
+      "url": "https://www.pomodorotechnique.com",
+      "title": "The Pomodoro Technique",
+      "accessed": "2026-09-29"
+    },
+    {
+      "id": 2,
+      "url": "https://www.faasafety.gov/files/events/SO/SO15/2024/SO15134204/Cirillo_--_Pomodoro_Technique.pdf",
+      "title": "The Pomodoro Technique (Francesco Cirillo)",
+      "accessed": "2026-09-29"
+    },
+    {
+      "id": 3,
+      "url": "https://help.obsidian.md/data-storage",
+      "title": "How Obsidian stores data",
+      "accessed": "2026-09-29"
+    },
+    {
+      "id": 4,
+      "url": "https://v2.tauri.app/start",
+      "title": "What is Tauri?",
+      "accessed": "2026-09-29"
+    },
+    {
+      "id": 5,
+      "url": "https://www.sqlite.org/features.html",
+      "title": "Features of SQLite",
+      "accessed": "2026-09-29"
+    },
+    {
+      "id": 6,
+      "url": "https://vuejs.org/api/composition-api-setup.html",
+      "title": "Vue Composition API setup",
+      "accessed": "2026-09-29"
+    },
+    {
+      "id": 7,
+      "url": "https://www.w3.org/WAI/WCAG22/Understanding/contrast-minimum",
+      "title": "WCAG 2.2 Contrast Minimum",
+      "accessed": "2026-09-29"
+    }
+  ]
+}

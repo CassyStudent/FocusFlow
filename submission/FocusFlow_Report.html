@@ -1,0 +1,403 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>FocusFlow — Product and Development Report</title>
+<style>
+@page { size: A4; margin: 16mm 15mm 17mm; }
+* { box-sizing: border-box; }
+html { color: #2f2429; background: white; }
+body { margin: 0; font-family: "Segoe UI", Arial, sans-serif; font-size: 10.2pt; line-height: 1.52; color: #2f2429; }
+.cover { height: 260mm; display: flex; flex-direction: column; justify-content: space-between; page-break-after: always; padding: 18mm 10mm 12mm; background: linear-gradient(145deg,#fff7fa 0%,#fff 68%); border: 1px solid #f0ceda; border-radius: 18px; }
+.cover-kicker { color:#c23b6c; text-transform:uppercase; letter-spacing:.16em; font-size:10pt; font-weight:800; }
+.cover h1 { margin: 10mm 0 4mm; font-size: 38pt; line-height: 1.05; color:#2f2429; }
+.cover .subtitle { max-width: 125mm; font-size:16pt; line-height:1.4; color:#6f5f66; }
+.cover-card { width: 100%; padding: 8mm; border-radius: 14px; background:#fff; border:1px solid #f0ceda; box-shadow:0 10px 30px rgba(111,45,70,.08); }
+.cover-grid { display:grid; grid-template-columns:38mm 1fr; gap:3mm 6mm; font-size:10.5pt; }
+.cover-grid strong { color:#6f5f66; }
+.repo-placeholder { color:#a82e59; font-weight:700; }
+main { max-width: 180mm; margin: 0 auto; }
+h2 { margin: 9mm 0 3mm; padding-bottom: 2mm; border-bottom: 1px solid #f0ceda; font-size: 20pt; color:#2f2429; page-break-after: avoid; }
+h2:not(:first-child) { page-break-before: auto; }
+h3 { margin: 6mm 0 2mm; font-size: 14pt; color:#a82e59; page-break-after: avoid; }
+h4 { margin: 4mm 0 1.5mm; font-size: 11.5pt; color:#2f2429; page-break-after: avoid; }
+p { margin: 0 0 3mm; }
+ul, ol { margin: 1mm 0 4mm 6mm; padding-left: 5mm; }
+li { margin-bottom: 1mm; }
+a { color:#a82e59; text-decoration:none; overflow-wrap:anywhere; }
+code { font-family: Consolas, monospace; font-size: 8.8pt; background:#fff0f5; padding:.2mm 1mm; border-radius:4px; }
+pre { margin:3mm 0 5mm; padding:4mm; border:1px solid #f0ceda; border-radius:10px; background:#fff7fa; white-space:pre-wrap; page-break-inside:avoid; }
+pre code { background:transparent; padding:0; }
+table { width:100%; border-collapse:collapse; margin:3mm 0 5mm; font-size:9pt; page-break-inside:avoid; }
+th { background:#fdebf2; color:#2f2429; text-align:left; }
+th, td { border:1px solid #f0ceda; padding:2.2mm 2.5mm; vertical-align:top; }
+img { display:block; width:100%; height:auto; margin:3mm auto 2mm; border:1px solid #f0ceda; border-radius:10px; box-shadow:0 7px 22px rgba(111,45,70,.08); page-break-inside:avoid; }
+blockquote { margin:4mm 0; padding:3mm 5mm; border-left:4px solid #c23b6c; background:#fff7fa; }
+.section-note { background:#fff7fa; border:1px solid #f0ceda; border-radius:10px; padding:4mm; }
+#application-visuals ~ h3 { page-break-before: always; }
+#sources { page-break-before: always; }
+#sources + p, #sources ~ p { font-size:8.7pt; white-space:pre-line; line-height:1.55; }
+@media print {
+  h2, h3, h4 { break-after: avoid; }
+  p, li { orphans: 3; widows: 3; }
+  table, pre, img { break-inside: avoid; }
+}
+</style>
+</head>
+<body>
+<section class="cover">
+  <div>
+    <div class="cover-kicker">Dev 5 · Product report</div>
+    <h1>FocusFlow</h1>
+    <div class="subtitle">Research, product requirements, design choices, implementation evidence, vault examples, AI note and reflection.</div>
+  </div>
+  <div class="cover-card">
+    <div class="cover-grid">
+      <strong>Student</strong><span>[add your name]</span>
+      <strong>Date</strong><span>29 September 2026</span>
+      <strong>Product</strong><span>Offline student task and focus desktop application</span>
+      <strong>Repository</strong><span class="repo-placeholder">https://github.com/CassyStudent/FocusFlow</span>
+      <strong>Technology</strong><span>Vue 3 · Pinia · Vue Router · Tauri 2 · Rust · SQLite · SCSS</span>
+    </div>
+  </div>
+</section>
+<main><h2 id="1-project-summary">1. Project summary</h2>
+<p>FocusFlow is an offline desktop application for students. It combines a small task list, a focus timer, read-only session history and append-only Markdown output for an Obsidian vault. The main goal is to reduce the friction between deciding what to study, doing a focused session and keeping a transparent record afterwards.</p>
+<p>The project is deliberately narrow. It does not include accounts, cloud synchronization, social features, gamification, complex project management or analytics dashboards. This boundary keeps the application realistic for a student assignment and makes its architecture explainable.</p>
+<p>At the time of this report, the core task, timer, history, settings, SQLite and Obsidian-outbox flows are implemented. The timer-sound preference is stored, but actual audio playback is not yet implemented. The repository is local and does not yet have a GitHub remote; the repository URL above must therefore be replaced after publishing.</p>
+<h2 id="2-research">2. Research</h2>
+<h3 id="21-focus-method">2.1 Focus method</h3>
+<p>The Pomodoro Technique influenced the timer defaults, but FocusFlow is not presented as a full Pomodoro implementation. The official site describes the method as a broader productivity system rather than only a timer.[1] Cirillo's original guide describes the traditional cycle as 25 minutes of work followed by a short break, which supports the application's initial 25-minute focus and 5-minute break defaults.[2]</p>
+<p>The product adapts this idea for students by allowing:</p>
+<ul>
+<li>a focus session linked to an active task;</li>
+<li>a standalone activity when no task is appropriate;</li>
+<li>pause and resume;</li>
+<li>completion at the planned end time;</li>
+<li>an explicit “complete early” outcome;</li>
+<li>cancellation that preserves the actual elapsed time;</li>
+<li>configurable focus and break durations.</li>
+</ul>
+<p>This adaptation is intentional. The app borrows the clear time-boxing pattern but does not claim to reproduce every planning and interruption rule of the full technique.</p>
+<h3 id="22-local-first-notes-and-obsidian">2.2 Local-first notes and Obsidian</h3>
+<p>Obsidian stores notes as Markdown-formatted plain-text files inside a vault, where a vault is a folder on the local file system.[3] This matches FocusFlow's local-first goal and makes generated history easy to inspect without locking the user into a proprietary database format.</p>
+<p>FocusFlow treats Markdown as an audit output rather than its operational database. The application stores current state in SQLite, then appends events to daily Markdown files in this structure:</p>
+<pre><code class="language-text">FocusFlow/
+├── Tasks/
+│   └── YYYY-MM-DD.md
+└── Sessions/
+    └── YYYY-MM-DD.md
+</code></pre>
+<p>This separation matters. SQLite answers questions such as “what tasks exist now?” and “is a timer currently active?”, while the vault provides a readable chronological record of what happened.</p>
+<h3 id="23-desktop-and-data-technology">2.3 Desktop and data technology</h3>
+<p>Tauri supports desktop applications that use an HTML/CSS/JavaScript frontend and can use Rust for backend logic.[4] This made it suitable for combining a familiar Vue interface with a narrow native boundary for SQLite, folder selection and safe file writing.</p>
+<p>SQLite was chosen for operational storage because it provides ACID transactions and supports transactional updates in a single local application file.[5] FocusFlow uses a transaction to save an operational change and its matching outbox event together. If writing to the vault fails later, the local change remains saved and the event stays pending for retry.</p>
+<p>Vue's Composition API and <code>&lt;script setup&gt;</code> fit the component structure used in this project; the Vue documentation recommends <code>&lt;script setup&gt;</code> for concise Composition API use in single-file components.[6] This choice also stays close to technology I already understand, which makes the final implementation easier to explain and maintain.</p>
+<h3 id="24-accessibility-and-visual-research">2.4 Accessibility and visual research</h3>
+<p>The interface uses a light-pink identity, but important text remains dark and status is communicated with wording and icons as well as color. WCAG guidance uses a 4.5:1 contrast threshold for normal text.[7] The design plan therefore checked representative combinations, including dark text on the light background and white text on the primary pink button.</p>
+<p>The visual references were used for principles rather than copied as templates. The task-management reference contributed a persistent sidebar, clear rows and restrained density. The timer reference contributed a large countdown and obvious primary action. Features outside the PRD—such as accounts, upgrades, leaderboards, AI panels and complex analytics—were explicitly excluded.</p>
+<h2 id="3-product-requirements-document-prd">3. Product Requirements Document (PRD)</h2>
+<h3 id="31-problem-statement">3.1 Problem statement</h3>
+<p>Students often separate task planning, focus timing and study records across several tools. This creates extra steps and makes it difficult to see which task a completed focus session belonged to. FocusFlow should provide one small offline workflow from planning to focused work to readable history.</p>
+<h3 id="32-target-user">3.2 Target user</h3>
+<p>The primary user is a student who:</p>
+<ul>
+<li>plans coursework on a Windows desktop or laptop;</li>
+<li>wants a simple focus timer without social or account features;</li>
+<li>values offline control and readable local files;</li>
+<li>may already use Obsidian for notes;</li>
+<li>needs a system that is quick to understand and does not require extensive setup.</li>
+</ul>
+<h3 id="33-product-goal">3.3 Product goal</h3>
+<p>Enable a student to create a task, start a linked focus session, recover or finish that timer reliably, review immutable session history and append the event trail to an Obsidian-compatible folder.</p>
+<h3 id="34-required-features">3.4 Required features</h3>
+<h4 id="tasks">Tasks</h4>
+<ul>
+<li>Create a task with a required title and optional Course/Subject.</li>
+<li>Validate title and course length.</li>
+<li>Show active and completed tasks separately.</li>
+<li>Edit active tasks.</li>
+<li>Complete and reopen tasks.</li>
+<li>Delete tasks after confirmation.</li>
+<li>Preserve historical session snapshots when a task is later edited or deleted.</li>
+<li>Prevent mutation of a task while it is linked to the active focus timer.</li>
+</ul>
+<h4 id="focus-timer">Focus timer</h4>
+<ul>
+<li>Start from one active task or one standalone activity.</li>
+<li>Use a configurable planned duration from 1 to 180 minutes.</li>
+<li>Show a large remaining-time display.</li>
+<li>Pause and resume.</li>
+<li>Complete automatically when the timer reaches zero.</li>
+<li>Complete early with confirmation.</li>
+<li>Cancel with confirmation while preserving actual elapsed time.</li>
+<li>Offer a configurable break after a completed focus session.</li>
+<li>Recover a running or paused timer after reopening the desktop app.</li>
+<li>Derive elapsed time from timestamps instead of trusting interval ticks.</li>
+</ul>
+<h4 id="history">History</h4>
+<ul>
+<li>Store completed and cancelled focus sessions as immutable records.</li>
+<li>Show subject snapshots, planned duration, actual duration, status and end time.</li>
+<li>Group entries by local date.</li>
+<li>Filter All, Completed and Cancelled.</li>
+<li>Calculate today's completed-session count and actual focused duration.</li>
+<li>Exclude breaks from history.</li>
+</ul>
+<h4 id="settings-and-onboarding">Settings and onboarding</h4>
+<ul>
+<li>Select and validate a writable vault folder.</li>
+<li>Create <code>FocusFlow/Tasks</code> and <code>FocusFlow/Sessions</code> inside that folder.</li>
+<li>Warn when the chosen folder does not contain an Obsidian <code>.obsidian</code> directory.</li>
+<li>Configure default focus and break duration.</li>
+<li>Store the timer-sound preference.</li>
+<li>Show pending vault events and provide Retry Now.</li>
+<li>Require explicit approval before redirecting pending events to a different vault.</li>
+</ul>
+<h4 id="persistence-and-vault-output">Persistence and vault output</h4>
+<ul>
+<li>Use SQLite as the authoritative operational store.</li>
+<li>Save each application change and matching outbox record atomically.</li>
+<li>Append events to daily Markdown files.</li>
+<li>Store a unique Event ID in every Markdown entry.</li>
+<li>Check Event IDs before appending so retries do not duplicate entries.</li>
+<li>Escape user-entered Markdown control characters.</li>
+<li>Reject unsafe identifiers, path traversal and symbolic-link/reparse-point targets.</li>
+</ul>
+<h3 id="35-non-goals">3.5 Non-goals</h3>
+<ul>
+<li>User accounts or login.</li>
+<li>Cloud synchronization.</li>
+<li>Mobile application.</li>
+<li>Team collaboration.</li>
+<li>AI-generated task planning.</li>
+<li>Projects, priorities, subtasks or dependencies.</li>
+<li>Streaks, achievements or leaderboards.</li>
+<li>Long-break automation.</li>
+<li>Detailed productivity analytics or charts.</li>
+<li>Editing historical records.</li>
+</ul>
+<h3 id="36-success-criteria">3.6 Success criteria</h3>
+<p>A successful version allows the complete central workflow to run locally:</p>
+<ol>
+<li>configure a vault;</li>
+<li>create a task;</li>
+<li>start a focus session linked to it;</li>
+<li>pause/resume or finish/cancel it;</li>
+<li>reopen the application without losing timer state;</li>
+<li>view the resulting history;</li>
+<li>find matching non-duplicated Markdown events in the selected vault.</li>
+</ol>
+<h2 id="4-design-choices">4. Design choices</h2>
+<h3 id="41-visual-identity">4.1 Visual identity</h3>
+<p>The application uses a consistent light-pink design system:</p>
+<table>
+<thead>
+<tr>
+<th>Token</th>
+<th>Value</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>App background</td>
+<td><code>#FFF7FA</code></td>
+<td>Main canvas</td>
+</tr>
+<tr>
+<td>Sidebar</td>
+<td><code>#FDECF3</code></td>
+<td>Persistent navigation</td>
+</tr>
+<tr>
+<td>Soft accent</td>
+<td><code>#FFF0F5</code></td>
+<td>Selected and highlighted areas</td>
+</tr>
+<tr>
+<td>Card surface</td>
+<td><code>#FFFFFF</code></td>
+<td>Forms, rows and dialogs</td>
+</tr>
+<tr>
+<td>Primary pink</td>
+<td><code>#C23B6C</code></td>
+<td>Main actions and active navigation</td>
+</tr>
+<tr>
+<td>Primary hover</td>
+<td><code>#A82E59</code></td>
+<td>Hover/pressed state</td>
+</tr>
+<tr>
+<td>Border</td>
+<td><code>#F0CEDA</code></td>
+<td>Inputs, cards and dividers</td>
+</tr>
+<tr>
+<td>Strong text</td>
+<td><code>#2F2429</code></td>
+<td>Headings and body text</td>
+</tr>
+<tr>
+<td>Muted text</td>
+<td><code>#6F5F66</code></td>
+<td>Supporting information</td>
+</tr>
+<tr>
+<td>Destructive</td>
+<td><code>#B4233E</code></td>
+<td>Delete and cancel actions</td>
+</tr>
+</tbody>
+</table>
+<p>Rounded cards, shallow shadows and generous spacing create a calm study-oriented interface. Pink stays dominant, while destructive actions use a separate rose treatment and warnings use words/icons rather than color alone.</p>
+<h3 id="42-navigation-and-screen-roles">4.2 Navigation and screen roles</h3>
+<p>The persistent sidebar keeps the four product areas visible:</p>
+<ul>
+<li><strong>Tasks — Operate:</strong> create and manage study work.</li>
+<li><strong>Focus — Monitor/Operate:</strong> watch the timer and use explicit controls.</li>
+<li><strong>History — Monitor:</strong> review immutable session records.</li>
+<li><strong>Settings — Configure:</strong> manage defaults, vault state and recovery.</li>
+</ul>
+<p>This division avoids combining unrelated controls into one dashboard.</p>
+<h3 id="43-error-and-recovery-design">4.3 Error and recovery design</h3>
+<p>Local persistence errors are blocking because the interface must not claim success when SQLite did not save. Vault-write errors are recoverable because the operational change is already committed and its event can remain in the outbox. Forms retain their values after validation or persistence failure.</p>
+<p>The timer uses a timestamp-based state machine. The visible countdown refreshes on an interval, but the stored timestamps determine elapsed time. This is more reliable when a laptop sleeps or the application closes.</p>
+<h3 id="44-data-snapshots">4.4 Data snapshots</h3>
+<p>A focus session stores the task title and course as snapshots. This prevents later task edits or deletion from changing the meaning of old history. History therefore remains readable and stable.</p>
+<h2 id="5-implementation-overview">5. Implementation overview</h2>
+<h3 id="frontend">Frontend</h3>
+<ul>
+<li>Vue 3 single-file components with Composition API.</li>
+<li>Pinia store for cross-route application state.</li>
+<li>Vue Router for Tasks, Focus, History, Settings and onboarding.</li>
+<li>SCSS design tokens and reusable button/card/dialog patterns.</li>
+<li>A browser backend adapter for fast component development and tests.</li>
+</ul>
+<h3 id="desktop-backend">Desktop backend</h3>
+<ul>
+<li>Tauri 2 desktop shell.</li>
+<li>Rust commands as the controlled boundary between UI and native operations.</li>
+<li>SQLite via <code>rusqlite</code> with an initial migration.</li>
+<li>Tables for tasks, sessions, settings, active timer, used IDs and outbox events.</li>
+<li>Safe vault validation, folder creation and append-only Markdown delivery.</li>
+</ul>
+<h3 id="failure-safe-outbox">Failure-safe outbox</h3>
+<p>The backend creates the outbox payload during the same SQLite transaction as the task or session change. Delivery happens afterwards. A failed file write records an error and stops the current retry batch; successful or already-present Event IDs are marked delivered.</p>
+<h2 id="6-application-visuals">6. Application visuals</h2>
+<h3 id="tasks_1">Tasks</h3>
+<p><img alt="Tasks screen" src="visuals/tasks.png" /></p>
+<p>The Tasks screen prioritizes quick creation and keeps row actions compact. Active and completed counts come from real data, and destructive actions are visually separated.</p>
+<h3 id="running-focus-session">Running focus session</h3>
+<p><img alt="Running focus timer" src="visuals/focus-running.png" /></p>
+<p>The countdown is the visual anchor. The selected task, course and actual focused time remain visible, while Pause is the main action and completion/cancellation remain explicit.</p>
+<h3 id="history_1">History</h3>
+<p><img alt="History screen" src="visuals/history.png" /></p>
+<p>History shows a small daily summary rather than a full analytics dashboard. Completed and cancelled records have visible labels and immutable duration details.</p>
+<h3 id="settings">Settings</h3>
+<p><img alt="Settings screen" src="visuals/settings.png" /></p>
+<p>Settings are arranged as a single column of cards. Timer defaults, vault location, pending-event recovery and sound preference remain understandable without adding advanced configuration.</p>
+<h2 id="7-obsidian-vault-example">7. Obsidian vault example</h2>
+<p>The included <code>vault-sample</code> folder was generated by running the actual Rust backend against a temporary SQLite database and then delivering its outbox to the selected folder. The generation run delivered seven events with zero failures. The resulting sample contains two Markdown files.</p>
+<h3 id="task-entry-excerpt">Task entry excerpt</h3>
+<pre><code class="language-markdown">## Task: Finish Dev 5 project report
+- Event ID: event-task-report-created
+- Timestamp: 2026-09-29T06:20:00.000000000Z +02:00
+- Event type: task_created
+- Status: active
+- Task ID: task-dev5-report
+- Title: Finish Dev 5 project report
+- Course/Subject: Dev 5
+</code></pre>
+<h3 id="completed-session-excerpt">Completed session excerpt</h3>
+<pre><code class="language-markdown">## Focus: Finish Dev 5 project report
+- Event ID: event-session-report-completed
+- Timestamp: 2026-09-29T06:55:00.000000000Z +02:00
+- Event type: focus_completed
+- Status: completed
+- Session ID: session-dev5-report
+- Task ID: task-dev5-report
+- Task title: Finish Dev 5 project report
+- Course/Subject: Dev 5
+- Activity: None
+- Planned seconds: 1500
+- Actual seconds: 1500
+- Completion type: timer_finished
+</code></pre>
+<h3 id="cancelled-standalone-session-excerpt">Cancelled standalone session excerpt</h3>
+<pre><code class="language-markdown">## Focus: Plan study week
+- Event ID: event-session-plan-cancelled
+- Timestamp: 2026-09-29T07:07:00.000000000Z +02:00
+- Event type: focus_cancelled
+- Status: cancelled
+- Session ID: session-study-plan
+- Task ID: None
+- Task title: None
+- Course/Subject: None
+- Activity: Plan study week
+- Planned seconds: 900
+- Actual seconds: 420
+- Completion type: None
+</code></pre>
+<p>These entries demonstrate active/completed task events, a completed linked session and a cancelled standalone activity. Event IDs make retries checkable and prevent silent duplication.</p>
+<h2 id="8-verification">8. Verification</h2>
+<p>The following checks were run on 29 September 2026:</p>
+<table>
+<thead>
+<tr>
+<th>Check</th>
+<th>Result</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Frontend unit/component tests</td>
+<td>29 passed across 7 test files</td>
+</tr>
+<tr>
+<td>Frontend production build</td>
+<td>Passed with Vite</td>
+</tr>
+<tr>
+<td>Rust backend tests</td>
+<td>21 passed</td>
+</tr>
+<tr>
+<td>Rust Clippy with warnings denied</td>
+<td>Passed</td>
+</tr>
+<tr>
+<td>Vault sample delivery</td>
+<td>7 delivered, 0 already present, 0 failed</td>
+</tr>
+<tr>
+<td>Generated sample records</td>
+<td>2 tasks, 2 sessions, 7 delivered outbox events</td>
+</tr>
+<tr>
+<td>Visual review</td>
+<td>Tasks, running timer, history and settings screenshots inspected</td>
+</tr>
+</tbody>
+</table>
+<p>The repository was published publicly at <code>https://github.com/CassyStudent/FocusFlow</code> on 29 September 2026. The implementation and submission artifacts are included in the repository.</p>
+<h2 id="9-ai-use-note">9. AI use note</h2>
+<p>Hermes Agent was used as a development and documentation assistant. It helped inspect the repository, run tests and builds, review implementation choices, capture application screenshots, generate the report structure and create a reproducible vault sample through the actual backend code. AI assistance was also used to improve wording and organize evidence.</p>
+<p>The application scope, design direction and technical decisions were kept within the approved student-project boundary. Generated material should still be reviewed by me before submission so that I can explain every feature, dependency and design decision in my own words. No AI service is required by the FocusFlow application at runtime.</p>
+<h2 id="10-reflection">10. Reflection</h2>
+<p>The most important lesson from this project was that a small offline app still needs clear data boundaries. At first, writing directly to Markdown could appear simpler, but it would make timer recovery, task mutation and reliable retries difficult. Separating SQLite operational state from append-only Obsidian history made the design more robust and easier to reason about.</p>
+<p>I also learned that timer correctness should not depend on a visible interval. Persisted timestamps make pause, resume and recovery explainable even when the application is closed or the computer sleeps. Snapshotting task information into session history was another important decision because historical records should not change when current tasks change.</p>
+<p>The main challenge was controlling scope. It was tempting to add analytics, projects, themes and more timer modes, but those features would reduce the time available for reliability and testing. The final product is stronger because it focuses on one complete workflow.</p>
+<p>If I continued the project, my next steps would be to implement the stored timer-sound preference, complete final desktop packaging checks, improve keyboard/focus testing and publish the verified repository with clear setup instructions.</p>
+<h2 id="sources">Sources</h2>
+<p>[1] https://www.pomodorotechnique.com — The Pomodoro Technique
+[2] https://www.faasafety.gov/files/events/SO/SO15/2024/SO15134204/Cirillo_--_Pomodoro_Technique.pdf — The Pomodoro Technique (Francesco Cirillo)
+[3] https://help.obsidian.md/data-storage — How Obsidian stores data
+[4] https://v2.tauri.app/start — What is Tauri?
+[5] https://www.sqlite.org/features.html — Features of SQLite
+[6] https://vuejs.org/api/composition-api-setup.html — Vue Composition API setup
+[7] https://www.w3.org/WAI/WCAG22/Understanding/contrast-minimum — WCAG 2.2 Contrast Minimum</p></main>
+</body>
+</html>

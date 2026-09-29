@@ -922,6 +922,170 @@ select {
   }
 }
 
+.success-alert,
+.inline-warning {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 13px 15px;
+  margin-bottom: 18px;
+  border-radius: 13px;
+  font-size: 14px;
+}
+
+.success-alert {
+  color: #725020;
+  background: #fff8e7;
+  border: 1px solid #ead4a4;
+}
+
+.inline-warning {
+  margin-top: 14px;
+  margin-bottom: 0;
+  color: #7c5423;
+  background: #fff7e8;
+  border: 1px solid #edd2a0;
+}
+
+.settings-save {
+  margin-top: 18px;
+}
+
+.history-list,
+.history-group {
+  display: grid;
+  gap: 14px;
+}
+
+.history-date-heading {
+  margin: 12px 0 0;
+  color: var(--muted);
+  font-size: 14px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.history-row {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 16px;
+  padding: 20px;
+}
+
+.history-status {
+  display: grid;
+  width: 42px;
+  height: 42px;
+  place-items: center;
+  color: #8a3657;
+  background: #fbe8ef;
+  border-radius: 13px;
+}
+
+.history-status--cancelled {
+  color: #9b3d46;
+  background: #fff0f1;
+}
+
+.history-copy,
+.history-heading {
+  min-width: 0;
+}
+
+.history-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+
+  h3 {
+    font-size: 17px;
+  }
+
+  span {
+    flex: 0 0 auto;
+    color: var(--muted);
+    font-size: 13px;
+  }
+}
+
+.session-details {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 24px;
+  margin-top: 13px;
+
+  div {
+    display: flex;
+    gap: 6px;
+  }
+
+  dt {
+    color: var(--muted);
+  }
+
+  dd {
+    margin: 0;
+    font-weight: 700;
+  }
+}
+
+.onboarding-page {
+  display: grid;
+  min-height: 100vh;
+  padding: 44px;
+  place-items: center;
+  background: var(--app-bg);
+}
+
+.onboarding-card {
+  width: min(720px, 100%);
+  padding: 36px;
+
+  > h1 {
+    max-width: 620px;
+    margin: 14px 0 12px;
+    font-size: clamp(30px, 4vw, 44px);
+    line-height: 1.08;
+  }
+
+  > p {
+    color: var(--muted);
+    line-height: 1.65;
+  }
+}
+
+.onboarding-brand {
+  width: fit-content;
+  margin-bottom: 32px;
+  color: var(--ink);
+}
+
+.onboarding-section {
+  padding: 21px 0;
+  margin-top: 22px;
+  border-top: 1px solid var(--border);
+
+  > h2 {
+    margin-bottom: 14px;
+    font-size: 18px;
+  }
+}
+
+.selected-path {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 13px;
+  color: var(--primary-hover) !important;
+  overflow-wrap: anywhere;
+}
+
+.focus-stage--completed {
+  border-color: #e7b8c9;
+  box-shadow: 0 24px 65px rgba(139, 62, 91, 0.14);
+}
+
 @media (max-width: 1180px) {
   .page {
     padding-inline: 34px;

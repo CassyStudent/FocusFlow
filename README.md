@@ -6,18 +6,19 @@ FocusFlow is an offline desktop application for students that combines lightweig
 
 The repository currently contains:
 
-- Vue 3 + Vite + Tauri 2 project setup;
+- Vue 3 + Vite + Tauri 2 desktop project setup;
 - Pinia and Vue Router;
-- the approved light-pink application shell;
-- Tasks, Focus, History and Settings routes;
-- a working first Tasks vertical slice with create, edit, complete, reopen and delete interactions;
-- title and Course/Subject validation;
-- browser-development persistence for the initial Tasks slice;
-- initial Focus, History and Settings visual states;
-- Vitest domain and component tests;
-- Tauri SQL and dialog plugins prepared for the durable SQLite/vault implementation.
+- the approved accessible light-pink application shell;
+- onboarding plus Tasks, Focus, History and Settings routes;
+- task creation, editing, completion, reopening and deletion;
+- timestamp-based focus and break timers with pause, resume, early completion, cancellation and recovery;
+- immutable session history with daily summaries and status filters;
+- SQLite persistence through a narrow Rust/Tauri command boundary;
+- append-only Obsidian Markdown output with a transactional outbox, retry and duplicate protection;
+- configurable focus/break defaults, vault validation and pending-event recovery;
+- Vitest frontend tests and Rust backend tests.
 
-SQLite persistence, timer recovery, Obsidian append/outbox behavior and complete focus-session state transitions are the next implementation phases.
+The timer-sound preference is persisted, but actual completion audio playback remains a documented follow-up.
 
 ## Prerequisites
 
